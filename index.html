@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="ms" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Super Mario Arabic Quest - Platformer 2D Bahasa Arab Tahun 2</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Tajawal:wght@500;700;900&family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            mario: {
+              red: '#E52521',
+              blue: '#00247D',
+              sky: '#5C94FC',
+              yellow: '#FCD800',
+              green: '#00A800',
+              pipe: '#00CC00',
+              pipeDark: '#008800',
+              brick: '#B84400',
+              ground: '#E06C00'
+            }
+          },
+          fontFamily: {
+            retro: ['"Press Start 2P"', 'cursive'],
+            arabic: ['"Tajawal"', 'sans-serif'],
+            fredoka: ['"Fredoka"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Fredoka', 'Tajawal', sans-serif;
+      background-color: #222;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow-x: hidden;
+    }
+
+    .retro-font { font-family: 'Press Start 2P', cursive; }
+    .arabic-text { font-family: 'Tajawal', sans-serif; }
+
+    .pixel-box {
+      border: 4px solid #000;
+      box-shadow: 6px 6px 0px #000;
+    }
+
+    .pixel-btn {
+      border: 4px solid #000;
+      box-shadow: 0 6px 0 #000;
+      transition: all 0.1s ease;
+    }
+
+    .pixel-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #000;
+    }
+
+    /* Coin animation spin */
+    @keyframes spinCoin {
+      0%, 100% { transform: scaleX(1); }
+      50% { transform: scaleX(0.2); }
+    }
+    .coin-spin {
+      animation: spinCoin 0.8s infinite ease-in-out;
+    }
+
+    /* Touch Control Buttons styling */
+    .ctrl-btn {
+      background: rgba(255, 255, 255, 0.25);
+      border: 3px solid #000;
+      box-shadow: 0 4px 0 #000;
+      backdrop-filter: blur(4px);
+    }
+    .ctrl-btn:active {
+      background: rgba(255, 216, 0, 0.8);
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #000;
+    }
+
+    /* Certificate print layout */
+    @media print {
+      body * { visibility: hidden; }
+      #certificate-modal, #certificate-modal * { visibility: visible; }
+      #certificate-modal {
+        position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+        background: white !important;
+      }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800 bg-slate-900">
+
+  <!-- TOP HUD BAR (ONLY VISIBLE IN GAME) -->
+  <header id="top-hud" class="bg-mario-red text-white border-b-4 border-black p-2 sm:p-3 hidden z-30 relative shadow-lg">
+    <div class="max-w-4xl mx-auto flex justify-between items-center text-xs sm:text-sm font-bold retro-font">
+      <div class="flex items-center gap-2">
+        <span class="text-mario-yellow">MARIO</span>
+        <span id="hud-player-name" class="text-white truncate max-w-[120px] sm:max-w-[180px]">-</span>
+      </div>
+      <div class="flex items-center gap-1 bg-black/40 px-3 py-1 rounded-full border-2 border-yellow-400">
+        <span class="text-mario-yellow coin-spin inline-block">🪙</span>
+        <span class="text-mario-yellow">x <span id="hud-coins">0000</span></span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span>SOALAN</span>
+        <span id="hud-questions-cleared" class="text-mario-yellow">0/5</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-grow flex items-center justify-center p-2 sm:p-4 max-w-5xl w-full mx-auto relative">
+
+    <!-- ======================================================== -->
+    <!-- 1. SKRIN UTAMA / BORANG PENDAFTARAN                       -->
+    <!-- ======================================================== -->
+    <section id="screen-main" class="w-full max-w-lg bg-mario-sky border-4 border-black rounded-3xl p-5 sm:p-8 pixel-box bg-gradient-to-b from-sky-400 to-sky-200 shadow-2xl relative">
+      <div class="text-center mb-6">
+        <div class="inline-block bg-mario-red text-white text-xs px-3 py-1 rounded-full border-2 border-black retro-font uppercase mb-2 animate-bounce">
+          Bahasa Arab Tahun 2
+        </div>
+        <h1 class="text-2xl sm:text-4xl font-black text-mario-yellow stroke-black tracking-wide drop-shadow-[0_4px_0_#000] retro-font uppercase leading-tight">
+          SUPER MARIO<br>
+          <span class="text-white text-2xl sm:text-3xl block mt-2 font-black arabic-text">هَيَّا نَتَعَارَفُ</span>
+        </h1>
+        <p class="text-slate-900 text-xs sm:text-sm font-bold mt-2 bg-yellow-300 inline-block px-3 py-1 rounded-lg border-2 border-black">
+          🕹️ Platformer 2D: Kutip Syiling &amp; Jawab Soalan!
+        </p>
+      </div>
+
+      <form id="start-form" onsubmit="handleStartForm(event)" class="space-y-4 bg-yellow-100 border-4 border-black p-5 rounded-2xl shadow-inner">
+        <div>
+          <label for="input-name" class="block text-xs font-bold retro-font text-slate-800 mb-1">👤 NAMA MURID:</label>
+          <input type="text" id="input-name" required placeholder="Contoh: Ahmad Zaki" class="w-full px-4 py-3 rounded-xl border-4 border-black font-bold focus:outline-none focus:ring-4 focus:ring-mario-yellow text-slate-900">
+        </div>
+        <div>
+          <label for="input-class" class="block text-xs font-bold retro-font text-slate-800 mb-1">🏫 KELAS:</label>
+          <input type="text" id="input-class" required placeholder="Contoh: 2 Cemerlang" class="w-full px-4 py-3 rounded-xl border-4 border-black font-bold focus:outline-none focus:ring-4 focus:ring-mario-yellow text-slate-900">
+        </div>
+
+        <button type="submit" class="w-full bg-mario-green hover:bg-green-600 text-white font-bold py-4 rounded-2xl pixel-btn retro-font text-xs sm:text-sm flex items-center justify-center gap-3">
+          <span>TERUSKAN KE NOTA</span>
+          <span class="text-lg">➔</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- 2. NOTA RINGKAS (MUSHROOM KINGDOM STATION)               -->
+    <!-- ======================================================== -->
+    <section id="screen-notes" class="w-full bg-white border-4 border-black rounded-3xl p-4 sm:p-6 pixel-box shadow-2xl hidden relative">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b-4 border-black">
+        <div>
+          <span class="bg-mario-blue text-white text-xs px-2 py-1 rounded-full border border-black font-bold retro-font">STATION 1</span>
+          <h2 class="text-lg sm:text-2xl font-black text-mario-red mt-1">📚 NOTA RINGKAS (الْمُلاَحَظَاتُ)</h2>
+        </div>
+        <span class="text-3xl">🍄</span>
+      </div>
+
+      <p class="text-xs sm:text-sm font-bold text-slate-700 mb-4">
+        Fahami nota ini sebelum memulakan permainan platformer Mario:
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+        <!-- Huruf Ra & Zai -->
+        <div class="bg-amber-100 border-3 border-black p-3 rounded-xl border-2 border-black">
+          <h3 class="font-bold text-mario-red text-xs sm:text-sm mb-2 border-b border-black pb-1">1. Sebutan Huruf (ر / ز)</h3>
+          <div class="grid grid-cols-3 gap-2 text-center text-xs sm:text-sm font-bold">
+            <div class="bg-white p-2 rounded border border-black"><span class="text-xl arabic-text font-black block text-mario-red">رَ / زَ</span>Fathah (Atas)</div>
+            <div class="bg-white p-2 rounded border border-black"><span class="text-xl arabic-text font-black block text-mario-blue">رِ / زِ</span>Kasrah (Bawah)</div>
+            <div class="bg-white p-2 rounded border border-black"><span class="text-xl arabic-text font-black block text-mario-green">رُ / زُ</span>Dammah (Depan)</div>
+          </div>
+        </div>
+
+        <!-- Ucapan Asas -->
+        <div class="bg-sky-100 border-3 border-black p-3 rounded-xl border-2 border-black space-y-2">
+          <h3 class="font-bold text-mario-blue text-xs sm:text-sm border-b border-black pb-1">2. Ucapan &amp; Sapaan Asas</h3>
+          <div class="flex justify-between items-center bg-white p-2 rounded border border-black text-xs sm:text-sm">
+            <span class="font-black arabic-text text-base">صَبَاحَ الْخَيْرِ ➔ صَبَاحَ النُّورِ</span>
+            <span class="text-slate-600 font-bold">Selamat Pagi</span>
+          </div>
+          <div class="flex justify-between items-center bg-white p-2 rounded border border-black text-xs sm:text-sm">
+            <span class="font-black arabic-text text-base">أَهْلًا وَسَهْلًا / مَرْحَبًا</span>
+            <span class="text-slate-600 font-bold">Selamat Datang</span>
+          </div>
+        </div>
+
+        <!-- Soal Jawab Nama -->
+        <div class="bg-emerald-100 border-3 border-black p-3 rounded-xl border-2 border-black md:col-span-2">
+          <h3 class="font-bold text-mario-green text-xs sm:text-sm border-b border-black pb-1 mb-2">3. Bertanya Nama (مَا اسْمُكَ؟)</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm font-bold">
+            <div class="bg-white p-2 rounded border border-black"><strong>مَا اسْمُكَ؟</strong> = Siapa namamu? (Lelaki)</div>
+            <div class="bg-white p-2 rounded border border-black"><strong>مَا اسْمُكِ؟</strong> = Siapa namamu? (Perempuan)</div>
+            <div class="bg-white p-2 rounded border border-black"><strong>اسْمِي...</strong> = Nama saya...</div>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="startPlatformerGame()" class="w-full bg-mario-yellow hover:bg-yellow-400 text-slate-900 border-4 border-black font-black py-4 rounded-2xl pixel-btn retro-font text-xs sm:text-sm flex items-center justify-center gap-2">
+        <span>🎮 MULA CABARAN MARIO!</span>
+        <span>➔</span>
+      </button>
+    </section>
+
+    <!-- ========================================================== -->
+    <!-- 3. GAME CANVAS PLATFORMER 2D (MARIO COIN & QUESTION QUEST)  -->
+    <!-- ========================================================== -->
+    <section id="screen-game" class="w-full flex flex-col items-center hidden relative">
+      <!-- CANVAS WRAPPER -->
+      <div class="relative w-full max-w-4xl bg-mario-sky border-4 border-black rounded-2xl overflow-hidden pixel-box shadow-2xl">
+        <canvas id="gameCanvas" width="800" height="400" class="w-full h-auto block bg-mario-sky"></canvas>
+
+        <!-- IN-GAME QUIZ MODAL (POPUPS WHEN MARIO HITS [?] BLOCK) -->
+        <div id="quiz-modal" class="absolute inset-0 bg-black/75 z-40 flex items-center justify-center p-3 hidden">
+          <div class="bg-white border-4 border-black rounded-2xl p-4 sm:p-6 max-w-lg w-full text-center pixel-box relative animate-bounce-once">
+            <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-mario-yellow border-2 border-black px-4 py-1 rounded-full retro-font text-xs font-black">
+              BONGKAH MISTERI [?]
+            </div>
+            
+            <p class="text-xs font-bold text-slate-500 mt-2 mb-1">Selesaikan Soalan Bahasa Arab Ini:</p>
+            <div id="modal-question-text" class="text-lg sm:text-2xl font-black text-slate-900 arabic-text mb-4 bg-yellow-50 p-3 rounded-xl border-2 border-black">
+              - Soalan -
+            </div>
+
+            <!-- Options Container -->
+            <div id="modal-options-container" class="grid grid-cols-1 gap-2 mb-3">
+              <!-- Inserted dynamically via JS -->
+            </div>
+
+            <!-- Quiz Feedback message -->
+            <div id="modal-feedback" class="hidden p-2 text-xs font-bold rounded-lg border-2 border-black"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOUCH CONTROLS (FOR MOBILE / TOUCHSCREENS) -->
+      <div class="w-full max-w-4xl flex justify-between items-center mt-3 px-2 sm:px-4">
+        <!-- Left Right Buttons -->
+        <div class="flex gap-2">
+          <button id="btn-left" class="ctrl-btn w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white">◀</button>
+          <button id="btn-right" class="ctrl-btn w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white">▶</button>
+        </div>
+        
+        <!-- Controls Legend -->
+        <div class="hidden sm:block text-center text-slate-300 text-xs font-bold retro-font">
+          <div>KAWALAN: ⬅️ ➡️ ATAU A / D</div>
+          <div>LOMPAT: [SPACE] ATAU ⬆️</div>
+        </div>
+
+        <!-- Jump Button -->
+        <button id="btn-jump" class="ctrl-btn bg-mario-yellow/80 w-16 h-16 sm:w-20 sm:h-16 rounded-2xl flex items-center justify-center text-xl font-black text-black">
+          LOMPAT ⬆️
+        </button>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- 4. KEPUTUSAN & SIJIL (GAME OVER / WIN SCREEN)            -->
+    <!-- ======================================================== -->
+    <section id="screen-result" class="w-full max-w-lg bg-white border-4 border-black rounded-3xl p-6 shadow-2xl hidden relative text-center pixel-box">
+      <div class="text-4xl mb-2 animate-bounce">🏆</div>
+      <h2 class="text-2xl sm:text-3xl font-black text-mario-red retro-font mb-2">TAHNIAH / مَبْرُوك!</h2>
+      <p class="text-slate-600 font-bold text-xs sm:text-sm mb-4">Anda telah berjaya sampai ke Tiang Bendera Penamat!</p>
+
+      <div class="bg-yellow-100 border-4 border-black rounded-2xl p-4 mb-4 text-left space-y-2">
+        <div id="result-badge" class="text-center text-4xl mb-1">🌟</div>
+        <div id="result-title" class="text-center text-base sm:text-lg font-black retro-font text-mario-red">
+          SUPER MARIO MASTER
+        </div>
+        <hr class="border-black border-t-2 my-2">
+        <div class="text-xs font-bold text-slate-700 space-y-1">
+          <div>👤 Nama: <span id="result-name" class="text-black">-</span></div>
+          <div>🏫 Kelas: <span id="result-class" class="text-black">-</span></div>
+          <div>🪙 Jumlah Syiling: <span id="result-coins" class="text-mario-yellow font-black">0</span></div>
+          <div>✅ Soalan Betul: <span id="result-score" class="text-mario-green font-black">0/5</span></div>
+          <div>📅 Tarikh: <span id="result-date" class="text-black">-</span></div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button onclick="openCertificateModal()" class="flex-1 bg-mario-green hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl border-3 border-black pixel-btn retro-font text-xs">
+          📜 LIHAT SIJIL
+        </button>
+        <button onclick="restartGame()" class="flex-1 bg-mario-yellow hover:bg-yellow-400 text-slate-900 font-bold py-3 px-4 rounded-xl border-3 border-black pixel-btn retro-font text-xs">
+          🔄 MAIN SEMULA
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- CERTIFICATE PRINT MODAL                                  -->
+  <!-- ======================================================== -->
+  <div id="certificate-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white border-8 border-mario-yellow rounded-2xl p-6 max-w-xl w-full shadow-2xl relative text-center border-dashed">
+      <button onclick="closeCertificateModal()" class="no-print absolute top-3 right-3 bg-mario-red text-white w-8 h-8 rounded-full font-bold border-2 border-black">✕</button>
+
+      <div class="border-b-4 border-black pb-3 mb-3">
+        <div class="text-2xl mb-1">🍄 ⭐️ 🍄</div>
+        <h2 class="text-xl sm:text-2xl font-black retro-font text-mario-red">SIJIL PENCAPAIAN</h2>
+        <p class="text-xs font-bold text-slate-600">BAHASA ARAB TAHUN 2 (TAJUK 1: هَيَّا نَتَعَارَفُ)</p>
+      </div>
+
+      <div class="space-y-2 my-4">
+        <p class="text-xs text-slate-500 font-bold">DENGAN INI DIPERAKUKAN BAHAWA</p>
+        <h3 id="cert-name" class="text-xl sm:text-2xl font-black text-mario-blue underline decoration-yellow-400">
+          - NAMA MURID -
+        </h3>
+        <p class="text-xs font-bold text-slate-700">dari Kelas <span id="cert-class" class="text-black underline">-</span></p>
+        <p class="text-xs text-slate-600">Telah berjaya menyelesaikan Cabaran Platformer Super Mario Arabic Quest!</p>
+
+        <div class="inline-block bg-yellow-100 border-2 border-black px-4 py-1.5 rounded-xl text-sm font-black text-mario-red retro-font mt-2" id="cert-title">
+          SUPER MARIO MASTER
+        </div>
+
+        <div class="flex justify-center gap-4 mt-3 text-xs font-bold">
+          <div>Soalan Betul: <span id="cert-score" class="text-mario-green">5/5</span></div>
+          <div>Syiling: <span id="cert-coins" class="text-mario-yellow">500 🪙</span></div>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t-2 border-gray-300 flex justify-between items-end text-left text-xs font-bold text-slate-600">
+        <div>
+          <div>Tarikh: <span id="cert-date">-</span></div>
+          <div>Guru Cemerlang Bahasa Arab</div>
+        </div>
+        <div class="text-right">
+          <div class="text-xl">✍️</div>
+          <div class="italic">Pengesahan Modul Interaktif</div>
+        </div>
+      </div>
+
+      <div class="mt-4 no-print">
+        <button onclick="window.print()" class="bg-mario-blue text-white font-bold py-2.5 px-6 rounded-xl border-3 border-black pixel-btn retro-font text-xs">
+          🖨️ CETAK SIJIL / SIMPAN PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-950 text-slate-400 text-center py-2 text-xs border-t-2 border-black">
+    🎮 Permainan Platformer 2D Super Mario Bahasa Arab Tahun 2
+  </footer>
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT: ENGINE & GAME LOGIC                          -->
+  <!-- ======================================================== -->
+  <script>
+    /* ---------------------------------------------------------
+       1. GLOBAL STATE & PLAYER DATA
+    --------------------------------------------------------- */
+    let playerData = {
+      name: '',
+      className: '',
+      coins: 0,
+      questionsCleared: 0,
+      totalQuestions: 5
+    };
+
+    // Quiz Questions for Question Blocks [?]
+    const gameQuestions = [
+      {
+        question: "Apakah jawapan bagi ucapan 'صَبَاحَ الْخَيْرِ'?",
+        options: ["أَهْلًا وَسَهْلًا", "صَبَاحَ النُّورِ", "مَعَ السَّلاَمَةِ"],
+        correct: 1,
+        explanation: "Jawapan bagi Selamat Pagi ialah صَبَاحَ النُّورِ."
+      },
+      {
+        question: "Apakah maksud bagi 'مَا اسْمُكَ؟'?",
+        options: ["Siapa namamu?", "Selamat datang", "Apa khabar?"],
+        correct: 0,
+        explanation: "مَا اسْمُكَ bermaksud 'Siapa namamu?' (Lelaki)."
+      },
+      {
+        question: "Pilih sebutan yang betul bagi huruf ( رِ ):",
+        options: ["Ra (Baris Atas)", "Ri (Baris Bawah)", "Ru (Baris Depan)"],
+        correct: 1,
+        explanation: "Huruf ( رِ ) berbaris bawah dan berbunyi 'Ri'."
+      },
+      {
+        question: "Huruf 'زُ' (Zu) mempunyai baris apa?",
+        options: ["Baris Depan (Dammah)", "Baris Atas (Fathah)", "Baris Bawah (Kasrah)"],
+        correct: 0,
+        explanation: "Huruf 'زُ' berbaris depan (Dammah)."
+      },
+      {
+        question: "Ejaan Bahasa Arab bagi 'Selamat Datang' ialah:",
+        options: ["شُكْرًا", "أَهْلًا وَسَهْلًا", "إِلَى اللِّقَاءِ"],
+        correct: 1,
+        explanation: "أَهْلًا وَسَهْلًا bermaksud Selamat Datang!"
+      }
+    ];
+
+    /* ---------------------------------------------------------
+       2. RETRO SOUND SYNTHESIZER (WEB AUDIO API)
+    --------------------------------------------------------- */
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new AudioContext();
+    }
+
+    function playSound(type) {
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'coin') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(987.77, now);
+        osc.frequency.setValueAtTime(1318.51, now + 0.08);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.25);
+      } 
+      else if (type === 'jump') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(450, now + 0.12);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.12);
+      }
+      else if (type === 'block') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.setValueAtTime(520, now + 0.05);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.2);
+      }
+      else if (type === 'correct') {
+        const notes = [440, 554, 659, 880];
+        notes.forEach((freq, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.08);
+          gain.gain.setValueAtTime(0.2, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + (i + 1) * 0.08);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(now + i * 0.08); osc.stop(now + (i + 1) * 0.08);
+        });
+      }
+      else if (type === 'wrong') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.linearRampToValueAtTime(80, now + 0.25);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.25);
+      }
+      else if (type === 'win') {
+        const notes = [261, 329, 392, 523, 659, 784];
+        notes.forEach((freq, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + i * 0.1);
+          gain.gain.setValueAtTime(0.2, now + i * 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + (i + 1) * 0.1);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(now + i * 0.1); osc.stop(now + (i + 1) * 0.1);
+        });
+      }
+    }
+
+    /* ---------------------------------------------------------
+       3. NAVIGATION & START LOGIC
+    --------------------------------------------------------- */
+    function handleStartForm(e) {
+      e.preventDefault();
+      initAudio();
+      playSound('coin');
+
+      playerData.name = document.getElementById('input-name').value.trim();
+      playerData.className = document.getElementById('input-class').value.trim();
+
+      document.getElementById('hud-player-name').innerText = playerData.name.toUpperCase();
+      showScreen('screen-notes');
+    }
+
+    function showScreen(id) {
+      ['screen-main', 'screen-notes', 'screen-game', 'screen-result'].forEach(s => {
+        document.getElementById(s).classList.add('hidden');
+      });
+      document.getElementById(id).classList.remove('hidden');
+
+      if (id === 'screen-game') {
+        document.getElementById('top-hud').classList.remove('hidden');
+      } else if (id === 'screen-main' || id === 'screen-notes') {
+        document.getElementById('top-hud').classList.add('hidden');
+      }
+    }
+
+    function startPlatformerGame() {
+      showScreen('screen-game');
+      initCanvasGame();
+    }
+
+    /* ---------------------------------------------------------
+       4. CANVAS 2D PLATFORMER ENGINE
+    --------------------------------------------------------- */
+    let canvas, ctx;
+    let gameLoopId = null;
+    let gamePaused = false;
+    let activeBlockQuestion = null;
+
+    // Controls state
+    const keys = { left: false, right: false, jump: false };
+
+    // Camera offset
+    let cameraX = 0;
+
+    // Player Object (Mario)
+    const mario = {
+      x: 50,
+      y: 280,
+      width: 28,
+      height: 36,
+      vx: 0,
+      vy: 0,
+      speed: 3.5,
+      gravity: 0.45,
+      jumpForce: -10.5,
+      grounded: false,
+      facing: 'right'
+    };
+
+    // Level Elements Data
+    let platforms = [];
+    let coins = [];
+    let questionBlocks = [];
+    let flagpole = { x: 2200, y: 100, width: 12, height: 220 };
+
+    function initLevelData() {
+      cameraX = 0;
+      mario.x = 50;
+      mario.y = 280;
+      mario.vx = 0;
+      mario.vy = 0;
+
+      playerData.coins = 0;
+      playerData.questionsCleared = 0;
+      updateHUD();
+
+      // Ground platforms & elevated blocks
+      platforms = [
+        // Main Ground tiles
+        { x: 0, y: 350, width: 700, height: 50 },
+        { x: 780, y: 350, width: 650, height: 50 },
+        { x: 1500, y: 350, width: 800, height: 50 },
+
+        // Elevated Pipe Barriers & Brick Steps
+        { x: 300, y: 290, width: 40, height: 60, type: 'pipe' },
+        { x: 550, y: 260, width: 40, height: 90, type: 'pipe' },
+        { x: 920, y: 250, width: 120, height: 20, type: 'brick' },
+        { x: 1250, y: 220, width: 100, height: 20, type: 'brick' },
+        { x: 1650, y: 270, width: 40, height: 80, type: 'pipe' },
+        { x: 1900, y: 290, width: 140, height: 60, type: 'brick' }
+      ];
+
+      // Floating Gold Coins
+      coins = [
+        { x: 180, y: 310, collected: false },
+        { x: 210, y: 310, collected: false },
+        { x: 240, y: 310, collected: false },
+        { x: 420, y: 280, collected: false },
+        { x: 450, y: 280, collected: false },
+        { x: 940, y: 200, collected: false },
+        { x: 970, y: 200, collected: false },
+        { x: 1000, y: 200, collected: false },
+        { x: 1280, y: 170, collected: false },
+        { x: 1750, y: 310, collected: false },
+        { x: 1800, y: 310, collected: false }
+      ];
+
+      // Question Blocks [?] tied to questions
+      questionBlocks = [
+        { x: 220, y: 230, width: 32, height: 32, questionIndex: 0, hit: false },
+        { x: 480, y: 210, width: 32, height: 32, questionIndex: 1, hit: false },
+        { x: 860, y: 220, width: 32, height: 32, questionIndex: 2, hit: false },
+        { x: 1180, y: 190, width: 32, height: 32, questionIndex: 3, hit: false },
+        { x: 1820, y: 210, width: 32, height: 32, questionIndex: 4, hit: false }
+      ];
+    }
+
+    function initCanvasGame() {
+      canvas = document.getElementById('gameCanvas');
+      ctx = canvas.getContext('2d');
+
+      initLevelData();
+      setupControlListeners();
+
+      gamePaused = false;
+      if (gameLoopId) cancelAnimationFrame(gameLoopId);
+      gameLoop();
+    }
+
+    /* ---------------------------------------------------------
+       5. INPUT EVENT LISTENERS (KEYBOARD & TOUCH)
+    --------------------------------------------------------- */
+    function setupControlListeners() {
+      // Keyboard Controls
+      window.onkeydown = (e) => {
+        if (gamePaused) return;
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
+        if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+        if (e.key === 'ArrowUp' || e.key === ' ' || e.key === 'w' || e.key === 'W') {
+          if (!keys.jump && mario.grounded) {
+            mario.vy = mario.jumpForce;
+            mario.grounded = false;
+            playSound('jump');
+          }
+          keys.jump = true;
+        }
+      };
+
+      window.onkeyup = (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+        if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+        if (e.key === 'ArrowUp' || e.key === ' ' || e.key === 'w' || e.key === 'W') keys.jump = false;
+      };
+
+      // Mobile Touch Controls
+      bindTouchBtn('btn-left', 'left');
+      bindTouchBtn('btn-right', 'right');
+
+      const jumpBtn = document.getElementById('btn-jump');
+      jumpBtn.ontouchstart = (e) => { e.preventDefault(); triggerJump(); };
+      jumpBtn.onmousedown = (e) => { e.preventDefault(); triggerJump(); };
+    }
+
+    function bindTouchBtn(id, dir) {
+      const btn = document.getElementById(id);
+      btn.ontouchstart = (e) => { e.preventDefault(); keys[dir] = true; };
+      btn.ontouchend = (e) => { e.preventDefault(); keys[dir] = false; };
+      btn.onmousedown = (e) => { e.preventDefault(); keys[dir] = true; };
+      btn.onmouseup = (e) => { e.preventDefault(); keys[dir] = false; };
+    }
+
+    function triggerJump() {
+      if (!gamePaused && mario.grounded) {
+        mario.vy = mario.jumpForce;
+        mario.grounded = false;
+        playSound('jump');
+      }
+    }
+
+    /* ---------------------------------------------------------
+       6. GAME LOOP & UPDATE PHYSICS
+    --------------------------------------------------------- */
+    function gameLoop() {
+      if (!gamePaused) {
+        updatePhysics();
+        renderCanvas();
+      }
+      gameLoopId = requestAnimationFrame(gameLoop);
+    }
+
+    function updatePhysics() {
+      // Horizontal Movement
+      if (keys.left) {
+        mario.vx = -mario.speed;
+        mario.facing = 'left';
+      } else if (keys.right) {
+        mario.vx = mario.speed;
+        mario.facing = 'right';
+      } else {
+        mario.vx = 0;
+      }
+
+      // Apply Gravity
+      mario.vy += mario.gravity;
+
+      // Update positions
+      mario.x += mario.vx;
+      mario.y += mario.vy;
+
+      // Left World Limit
+      if (mario.x < 0) mario.x = 0;
+
+      // Pitfall check (Fell into gap)
+      if (mario.y > 450) {
+        mario.x = Math.max(50, cameraX + 50);
+        mario.y = 200;
+        mario.vy = 0;
+        playSound('wrong');
+      }
+
+      // Platform Collision Detection
+      mario.grounded = false;
+      platforms.forEach(plat => {
+        if (
+          mario.x < plat.x + plat.width &&
+          mario.x + mario.width > plat.x &&
+          mario.y < plat.y + plat.height &&
+          mario.y + mario.height > plat.y
+        ) {
+          // Landing on top
+          if (mario.vy > 0 && mario.y + mario.height - mario.vy <= plat.y + 10) {
+            mario.y = plat.y - mario.height;
+            mario.vy = 0;
+            mario.grounded = true;
+          }
+          // Hitting side
+          else if (mario.vx > 0 && mario.x + mario.width - mario.vx <= plat.x) {
+            mario.x = plat.x - mario.width;
+          } else if (mario.vx < 0 && mario.x - mario.vx >= plat.x + plat.width) {
+            mario.x = plat.x + plat.width;
+          }
+        }
+      });
+
+      // Gold Coins Collision
+      coins.forEach(c => {
+        if (!c.collected && Math.hypot((mario.x + 14) - c.x, (mario.y + 18) - c.y) < 22) {
+          c.collected = true;
+          playerData.coins += 10;
+          updateHUD();
+          playSound('coin');
+        }
+      });
+
+      // Question Blocks Collision (Hitting from Below)
+      questionBlocks.forEach(qb => {
+        if (!qb.hit) {
+          if (
+            mario.x < qb.x + qb.width &&
+            mario.x + mario.width > qb.x &&
+            mario.y < qb.y + qb.height &&
+            mario.y + mario.height > qb.y
+          ) {
+            // Check hit from underneath
+            if (mario.vy < 0 && mario.y >= qb.y + qb.height - 12) {
+              mario.vy = 2; // bounce back down
+              qb.hit = true;
+              playSound('block');
+              openInGameQuiz(qb.questionIndex);
+            } else if (mario.vy > 0 && mario.y + mario.height - mario.vy <= qb.y + 8) {
+              mario.y = qb.y - mario.height;
+              mario.vy = 0;
+              mario.grounded = true;
+            }
+          }
+        }
+      });
+
+      // Flagpole Finish Line Collision
+      if (mario.x + mario.width >= flagpole.x) {
+        finishGameSuccess();
+      }
+
+      // Camera Follow Mario Smoothly
+      cameraX = Math.max(0, mario.x - 250);
+    }
+
+    /* ---------------------------------------------------------
+       7. RENDER GRAPHICS ON CANVAS
+    --------------------------------------------------------- */
+    function renderCanvas() {
+      // Clear Screen (Sky Blue)
+      ctx.fillStyle = '#5C94FC';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      // Translate Camera
+      ctx.translate(-cameraX, 0);
+
+      // Draw Clouds in Background
+      ctx.fillStyle = '#FFFFFF';
+      drawCloud(150, 80);
+      drawCloud(500, 60);
+      drawCloud(1100, 90);
+      drawCloud(1700, 70);
+
+      // Draw Platforms & Ground
+      platforms.forEach(p => {
+        if (p.type === 'pipe') {
+          // Pipe Body
+          ctx.fillStyle = '#00CC00';
+          ctx.fillRect(p.x, p.y, p.width, p.height);
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(p.x, p.y, p.width, p.height);
+          // Pipe Lip
+          ctx.fillStyle = '#00EE00';
+          ctx.fillRect(p.x - 4, p.y, p.width + 8, 16);
+          ctx.strokeRect(p.x - 4, p.y, p.width + 8, 16);
+        } else if (p.type === 'brick') {
+          // Brick Block
+          ctx.fillStyle = '#B84400';
+          ctx.fillRect(p.x, p.y, p.width, p.height);
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(p.x, p.y, p.width, p.height);
+        } else {
+          // Ground Floor
+          ctx.fillStyle = '#E06C00';
+          ctx.fillRect(p.x, p.y, p.width, p.height);
+          // Grass Top
+          ctx.fillStyle = '#00A800';
+          ctx.fillRect(p.x, p.y, p.width, 12);
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(p.x, p.y, p.width, p.height);
+        }
+      });
+
+      // Draw Coins
+      coins.forEach(c => {
+        if (!c.collected) {
+          ctx.fillStyle = '#FCD800';
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      });
+
+      // Draw Question Blocks [?]
+      questionBlocks.forEach(qb => {
+        if (!qb.hit) {
+          // Active Yellow Block
+          ctx.fillStyle = '#FCD800';
+          ctx.fillRect(qb.x, qb.y, qb.width, qb.height);
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(qb.x, qb.y, qb.width, qb.height);
+
+          // Question mark
+          ctx.fillStyle = '#000000';
+          ctx.font = 'bold 18px "Press Start 2P", sans-serif';
+          ctx.fillText('?', qb.x + 8, qb.y + 24);
+        } else {
+          // Empty Used Block
+          ctx.fillStyle = '#885522';
+          ctx.fillRect(qb.x, qb.y, qb.width, qb.height);
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(qb.x, qb.y, qb.width, qb.height);
+        }
+      });
+
+      // Draw Flagpole (Goal)
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(flagpole.x, flagpole.y, flagpole.width, flagpole.height);
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(flagpole.x, flagpole.y, flagpole.width, flagpole.height);
+      // Gold Ball on top
+      ctx.fillStyle = '#FCD800';
+      ctx.beginPath();
+      ctx.arc(flagpole.x + 6, flagpole.y - 10, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      // Green Flag
+      ctx.fillStyle = '#00A800';
+      ctx.fillRect(flagpole.x + 12, flagpole.y + 10, 45, 30);
+      ctx.strokeRect(flagpole.x + 12, flagpole.y + 10, 45, 30);
+
+      // Draw Mario Character
+      drawMarioSprite(mario.x, mario.y, mario.facing);
+
+      ctx.restore();
+    }
+
+    function drawCloud(x, y) {
+      ctx.beginPath();
+      ctx.arc(x, y, 18, 0, Math.PI * 2);
+      ctx.arc(x + 15, y - 10, 22, 0, Math.PI * 2);
+      ctx.arc(x + 35, y, 18, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawMarioSprite(x, y, facing) {
+      // Red Cap & Shirt
+      ctx.fillStyle = '#E52521';
+      ctx.fillRect(x + 4, y, 20, 10); // Cap
+      ctx.fillRect(x + 4, y + 14, 20, 12); // Shirt
+
+      // Face / Skin
+      ctx.fillStyle = '#FFCC99';
+      ctx.fillRect(x + 6, y + 8, 16, 8);
+
+      // Blue Overalls
+      ctx.fillStyle = '#00247D';
+      ctx.fillRect(x + 6, y + 22, 16, 10);
+
+      // Brown Shoes
+      ctx.fillStyle = '#663300';
+      ctx.fillRect(x + 4, y + 32, 8, 4);
+      ctx.fillRect(x + 16, y + 32, 8, 4);
+
+      // Outer Outline
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x + 4, y, 20, 34);
+    }
+
+    /* ---------------------------------------------------------
+       8. IN-GAME QUIZ POPUP LOGIC
+    --------------------------------------------------------- */
+    function openInGameQuiz(qIndex) {
+      gamePaused = true;
+      activeBlockQuestion = gameQuestions[qIndex];
+
+      const modal = document.getElementById('quiz-modal');
+      const qText = document.getElementById('modal-question-text');
+      const container = document.getElementById('modal-options-container');
+      const feedback = document.getElementById('modal-feedback');
+
+      qText.innerText = activeBlockQuestion.question;
+      feedback.classList.add('hidden');
+      container.innerHTML = '';
+
+      activeBlockQuestion.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full bg-white hover:bg-yellow-200 border-3 border-black font-black p-3 rounded-xl text-center text-sm sm:text-base pixel-btn arabic-text";
+        btn.innerText = opt;
+        btn.onclick = () => handleAnswerSubmission(idx);
+        container.appendChild(btn);
+      });
+
+      modal.classList.remove('hidden');
+    }
+
+    function handleAnswerSubmission(selectedIndex) {
+      const feedback = document.getElementById('modal-feedback');
+      const container = document.getElementById('modal-options-container');
+
+      Array.from(container.children).forEach(b => b.disabled = true);
+
+      if (selectedIndex === activeBlockQuestion.correct) {
+        playSound('correct');
+        playerData.coins += 100;
+        playerData.questionsCleared += 1;
+        updateHUD();
+
+        feedback.className = "p-3 rounded-xl border-2 border-black text-center font-bold text-xs sm:text-sm bg-green-200 text-green-900 border-green-800";
+        feedback.innerHTML = `🎉 **BETUL!** +100 SYILING 🪙<br><span class="font-normal">${activeBlockQuestion.explanation}</span>`;
+      } else {
+        playSound('wrong');
+        feedback.className = "p-3 rounded-xl border-2 border-black text-center font-bold text-xs sm:text-sm bg-red-200 text-red-900 border-red-800";
+        feedback.innerHTML = `❌ **KURANG TEPAT!**<br><span class="font-normal">${activeBlockQuestion.explanation}</span>`;
+      }
+
+      feedback.classList.remove('hidden');
+
+      setTimeout(() => {
+        document.getElementById('quiz-modal').classList.add('hidden');
+        gamePaused = false;
+      }, 2000);
+    }
+
+    function updateHUD() {
+      document.getElementById('hud-coins').innerText = String(playerData.coins).padStart(4, '0');
+      document.getElementById('hud-questions-cleared').innerText = `${playerData.questionsCleared}/${playerData.totalQuestions}`;
+    }
+
+    /* ---------------------------------------------------------
+       9. GAME OVER / WIN & CERTIFICATE LOGIC
+    --------------------------------------------------------- */
+    function finishGameSuccess() {
+      gamePaused = true;
+      if (gameLoopId) cancelAnimationFrame(gameLoopId);
+
+      playSound('win');
+      showScreen('screen-result');
+
+      let title = "YOSHI HELPER 🥚";
+      let badge = "🥚";
+
+      if (playerData.questionsCleared >= 4) {
+        title = "SUPER MARIO MASTER 🌟";
+        badge = "🌟";
+      } else if (playerData.questionsCleared >= 2) {
+        title = "SUPER MARIO ADVANCED 🍄";
+        badge = "🍄";
+      }
+
+      const today = new Date().toLocaleDateString('ms-MY', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      // Fill result card
+      document.getElementById('result-badge').innerText = badge;
+      document.getElementById('result-title').innerText = title;
+      document.getElementById('result-coins').innerText = `${playerData.coins} 🪙`;
+      document.getElementById('result-score').innerText = `${playerData.questionsCleared}/${playerData.totalQuestions}`;
+      document.getElementById('result-name').innerText = playerData.name;
+      document.getElementById('result-class').innerText = playerData.className;
+      document.getElementById('result-date').innerText = today;
+
+      // Fill Certificate
+      document.getElementById('cert-name').innerText = playerData.name.toUpperCase();
+      document.getElementById('cert-class').innerText = playerData.className;
+      document.getElementById('cert-title').innerText = title;
+      document.getElementById('cert-score').innerText = `${playerData.questionsCleared}/${playerData.totalQuestions}`;
+      document.getElementById('cert-coins').innerText = `${playerData.coins} 🪙`;
+      document.getElementById('cert-date').innerText = today;
+    }
+
+    function openCertificateModal() {
+      playSound('block');
+      document.getElementById('certificate-modal').classList.remove('hidden');
+    }
+
+    function closeCertificateModal() {
+      document.getElementById('certificate-modal').classList.add('hidden');
+    }
+
+    function restartGame() {
+      playSound('coin');
+      showScreen('screen-main');
+    }
+  </script>
+</body>
+</html>
